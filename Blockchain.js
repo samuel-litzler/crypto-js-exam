@@ -8,7 +8,7 @@ class Blockchain{
   }
 
   /**
-   * Commence le block d'initialisation
+   * Initialise le premier block de la chaîne
    * 
    * @return new Block
    */
@@ -17,7 +17,7 @@ class Blockchain{
   }
 
   /**
-   * Récupère le dernier block
+   * Retourne le dernier block
    * 
    * @return this.chain[this.chain.length - 1]
    */
@@ -26,8 +26,7 @@ class Blockchain{
   }
 
   /**
-   * Récupère le block d'initialistion
-   * 
+   * Retourne le genesis block
    */
   getGenesisBlock(){
     return this.chain[0];
@@ -46,7 +45,6 @@ class Blockchain{
     newblock.index = this.getLastestBlock().index + 1;
     newblock.timestamp = Date.now();
     newblock.proofOfWork();
-    // faire un if 
     this.chain.push(newblock);
     if(this.checkValidity(this.chain)){
       this.io.emit('mine-end', this.chain, this.nodes[0].id, Date.now());
@@ -56,10 +54,9 @@ class Blockchain{
   }
 
   /**
-   * Vérifie la validité du block
+   * Vérifie la validité de la chaîne
    * 
    * On vérifie que le precedingHash du block actuel est le même que le hash du bloc précédent
-   * 
    * @param chain
    */
   checkValidity(chain) {
@@ -75,10 +72,7 @@ class Blockchain{
   }
 
   /**
-   * Ajout un noeud
-   * 
-   * push le noeud dans le tableau des noeuds
-   * 
+   * Ajout le noeud dans le tableau des noeuds
    * @param node
    */
   addNewNode(node){
@@ -86,7 +80,7 @@ class Blockchain{
   }
 
   /**
-   * Ajout du block d'initialisation
+   * Ajout du block d'initialisation à la premiere (0) position de la chaîne
    * 
    * @param block
    */
@@ -95,7 +89,7 @@ class Blockchain{
   }
 
   /**
-   * Ajout d'un nouveau chain
+   * Remplace le chain par la Blockchain
    * 
    * @param chain
    */
