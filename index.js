@@ -20,12 +20,23 @@ app.get('/blocks', (req, res) => {
   res.json(blockchain.chain);
 })
 
+// on n'utilise plus cette route -> /transaction
+// app.post('/mine', (req, res) => {
+//   const {sender, receiver, qty} = req.body;
+//   io.emit('mine', sender, receiver, qty);
+//   // blockchain.addNewBlock(new Block(req.body));
+//   res.redirect('/blocks');
+// })
 
-app.post('/mine', (req, res) => {
+app.post('/transaction', (req, res) => {
   const {sender, receiver, qty} = req.body;
-  io.emit('mine', sender, receiver, qty);
-  // blockchain.addNewBlock(new Block(req.body));
-  res.redirect('/blocks');
+  if(blockchain.transactions.length +1 > 2){
+    blockchain.addNewTransaction({sender, receiver, qty, timestamp: Date.now()});
+    io.emit('mine', blockchain.transactions);
+  }else{
+    io.emit('transaction', {sender, receiver, qty, timestamp: Date.now()});
+  }
+  res.json({status: 'Transaction added'})
 })
 
 app.post('/nodes', (req, res) => {

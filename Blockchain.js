@@ -1,3 +1,6 @@
+// import ES6 du module sha256 de la librairie crypto-JS
+const sha256 = require("crypto-js/sha256");
+// utilisation de la classe block
 const Block = require('./Block');
 
 class Blockchain{
@@ -5,6 +8,7 @@ class Blockchain{
     this.io = io;
     this.chain = [this.startGenesisBlock()];
     this.nodes = [];
+    this.transactions = [];
   }
 
   /**
@@ -33,6 +37,15 @@ class Blockchain{
   }
 
   /**
+   * Ajoute une transaction
+   */
+  addNewTransaction(transaction){
+    transaction.id = sha256(JSON.stringify(transaction)).toString();
+    this.transactions.push(transaction);
+    console.log(`New transaction added, id: \u001b[33m${transaction.id}\u001b[0m`);
+  }
+
+  /**
    * Ajout un nouveau block
    * 
    * Si la validité est passée, on envoie le nouveaux block
@@ -40,16 +53,20 @@ class Blockchain{
    * @param newblock Prend un nouveau block : new Block()
    * @return (checkValid) ? emit : error
    */
-  addNewBlock(newblock){
+   async addNewBlock(newblock){
     newblock.precedingHash = this.getLastestBlock().hash;
     newblock.index = this.getLastestBlock().index + 1;
     newblock.timestamp = Date.now();
-    newblock.proofOfWork();
-    this.chain.push(newblock);
-    if(this.checkValidity(this.chain)){
-      this.io.emit('mine-end', this.chain, this.nodes[0].id, Date.now());
-    }else{
-      console.log("Erreur du check de la validité")
+    let hash = await newblock.proofOfWork();
+    if(hash != null){
+      newblock.hash = hash;
+      this.chain.push(newblock);
+      if(this.checkValidity(this.chain)){
+        console.log(`BLOCK ${newblock.index} mined -  \u001b[33m${newblock.hash}\u001b[0m`);
+        this.io.emit('mine-end', this.chain, newblock.hash, Date.now());
+      }else{
+        this.chain.splice(this.chain.length - 1, 1);
+      }
     }
   }
 
@@ -94,8 +111,11 @@ class Blockchain{
    * @param chain
    */
   setNewChain(chain){
-    this.chain = chain;
+    if(chain.length > this.chain.length && this.checkValidity(chain)){
+      this.chain = chain;
+    }
   }
+
 }
 
 module.exports = Blockchain
